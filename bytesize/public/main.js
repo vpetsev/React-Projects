@@ -1,43 +1,24 @@
-// Information to reach API
-const apiKey = 'b926d2855d014c888e163c717b4d01cf';
-const url = 'https://api.rebrandly.com/v1/links';
-
-// Some page elements
+// Private API credentials are configured only in the local Node server.
 const inputField = document.querySelector('#input');
 const shortenButton = document.querySelector('#shorten');
 const responseField = document.querySelector('#responseField');
 
-// AJAX functions
-const shortenUrl = () => {
-    const urlToShorten = inputField.value
-    const data = JSON.stringify({ destination: urlToShorten })
+const shortenUrl = async () => {
+  try {
+    const response = await fetch('/api/shorten', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: inputField.value })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Unable to shorten the URL.');
+    responseField.textContent = `Your shortened URL is: ${data.shortUrl}`;
+  } catch (error) {
+    responseField.textContent = error.message;
+  }
+};
 
-    fetch(url, {
-        method: "POST",
-        headers: {
-            'Content-type': 'application/json',
-            'apikey': apiKey
-        },
-        body: data
-    }).then((response) => {
-        if (response.ok) {
-            return response.json()
-        }
-        throw new Error("Request failed!")
-    }, (networkError) => {
-        console.log(networkError.message)
-    }).then(jsonResponse => {
-        renderResponse(jsonResponse)
-    })
-}
-
-// Clear page and call AJAX functions
-const displayShortUrl = (event) => {
-    event.preventDefault();
-    while (responseField.firstChild) {
-        responseField.removeChild(responseField.firstChild)
-    }
-    shortenUrl();
-}
-
-shortenButton.addEventListener('click', displayShortUrl);
+shortenButton.addEventListener('click', event => {
+  event.preventDefault();
+  responseField.textContent = '';
+  shortenUrl();
+});

@@ -1,0 +1,4 @@
+
+# Server credentials (never commit real keys)
+.env
+.env.local
